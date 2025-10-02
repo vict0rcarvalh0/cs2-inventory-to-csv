@@ -1,5 +1,5 @@
 {
-  "name": "@victorcarvalho/cs2-inventory-to-csv",
+  "name": "@vict0rcarvalh0/cs2-inventory-to-csv",
   "description": "Export CS:GO/CS2 inventory to CSV with live Steam Community Market prices. Free, no API key needed.",
   "license": "MIT",
   "version": "1.0.0",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/victorcarvalho/cs2-inventory-to-csv"
+    "url": "git://github.com/vict0rcarvalh0/cs2-inventory-to-csv.git"
   },
   "main": "build/index.js",
   "bin": {
