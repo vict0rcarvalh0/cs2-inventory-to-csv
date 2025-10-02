@@ -8,7 +8,6 @@ import { Inventory, ParsedItem, PriceData } from "./types";
 import winston from "winston";
 import inquirer from "inquirer";
 import { XMLParser } from "fast-xml-parser";
-import { argv } from "process";
 
 const log = winston.createLogger({
   level: "debug",
