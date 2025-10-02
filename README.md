@@ -1,5 +1,8 @@
 # CSGO Inventory to CSV
 
+[![npm](https://img.shields.io/npm/v/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/cs2-inventory-to-csv)
+[![npm](https://img.shields.io/npm/dm/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/cs2-inventory-to-csv)
+
 Export your CS:GO/CS2 inventory to CSV with live Steam Community Market prices. Free, no API key needed.
 
 ## Prerequisites
