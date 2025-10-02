@@ -48,9 +48,7 @@ Output CSV files will be saved in the current directory with format: `{userId}_{
 
 ## Demo
 
-View a [sample CSV file](https://github.com/imlokesh/csgo-inventory-csv/blob/master/assets/imlokesh_76561198312488313_1682246447.csv) or watch the demo:
-
-![csgo-inventory-csv demo](https://github.com/imlokesh/csgo-inventory-csv/blob/master/assets/csgo-inventory-csv.gif)
+View a [sample CSV file](https://github.com/vict0rcarvalh0/cs2-inventory-to-csv/blob/main/assets/homerokb_76561198074182328_1759429635.csv)
 
 ## Price Data Source
 

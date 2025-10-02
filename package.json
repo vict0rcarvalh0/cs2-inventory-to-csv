@@ -15,7 +15,6 @@
     "csv"
   ],
   "contributors": [
-    "Lokesh Sharma <me@imlokesh.com>",
     "Victor Carvalho"
   ],
   "scripts": {
@@ -24,11 +23,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/imlokesh/csgo-inventory-csv"
+    "url": "git://github.com/victorcarvalho/cs2-inventory-to-csv"
   },
   "main": "build/index.js",
   "bin": {
-    "csgo-inventory-csv": "build/index.js"
+    "cs2-inventory-to-csv": "build/index.js"
   },
   "files": [
     "build",
