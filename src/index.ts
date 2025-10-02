@@ -21,6 +21,7 @@ const log = winston.createLogger({
 let ids: string[] = Array();
 let selectedCurrency: string = "USD";
 let steamCurrencyId: number = 1; // Default to USD
+let skinsOnly: boolean = false;
 
 // Map common currency codes to Steam currency IDs
 const currencyMap: { [key: string]: number } = {
@@ -57,12 +58,20 @@ await inquirer
       default: "USD",
       choices: Object.keys(currencyMap),
     },
+    {
+      type: "confirm",
+      message: "Export weapon skins only? (excludes cases, keys, stickers, etc.)",
+      name: "skinsOnly",
+      default: false,
+    },
   ])
   .then((answers) => {
     ids = parseIds(answers.ids);
     selectedCurrency = answers.currency.toUpperCase();
     steamCurrencyId = currencyMap[selectedCurrency] || 1;
+    skinsOnly = answers.skinsOnly;
     log.info(`Using currency: ${selectedCurrency} (Steam ID: ${steamCurrencyId})`);
+    log.info(`Skins only mode: ${skinsOnly ? 'enabled' : 'disabled'}`);
   });
 
 log.debug(`Input ids are ${JSON.stringify(ids)}`);
@@ -84,6 +93,29 @@ axios.interceptors.request.use((req) => {
 
 // Delay helper to avoid rate limiting
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Filter function to check if item is a weapon skin
+function isWeaponSkin(desc: any): boolean {
+  const type = desc.type?.toLowerCase() || "";
+  
+  // Exclude non-skin items
+  const excludeTypes = [
+    "container", "case", "key", "sticker", "graffiti", "patch", 
+    "pin", "music kit", "pass", "tool", "gift", "tag", "coin"
+  ];
+  
+  if (excludeTypes.some(excluded => type.includes(excluded))) {
+    return false;
+  }
+  
+  // Check if it has a Weapon tag (most reliable indicator)
+  const hasWeaponTag = desc.tags?.some((t: any) => t.category === "Weapon");
+  
+  // Allow items with weapon tags OR items with exterior tags (skins have wear)
+  const hasExteriorTag = desc.tags?.some((t: any) => t.category === "Exterior");
+  
+  return hasWeaponTag || hasExteriorTag;
+}
 
 // Fetch price from Steam Community Market
 async function getSteamMarketPrice(marketHashName: string, currencyId: number): Promise<any> {
@@ -157,6 +189,12 @@ for (const id of ids) {
 
     if (desc == undefined) {
       log.error(`Could not find description for ${JSON.stringify(asset)}`);
+      continue;
+    }
+
+    // Skip non-skins if skins-only mode is enabled
+    if (skinsOnly && !isWeaponSkin(desc)) {
+      log.debug(`Skipping non-skin item: ${desc.market_name}`);
       continue;
     }
 
