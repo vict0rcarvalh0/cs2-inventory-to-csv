@@ -2,7 +2,7 @@
   "name": "@vict0rcarvalh0/cs2-inventory-to-csv",
   "description": "Export CS:GO/CS2 inventory to CSV with live Steam Community Market prices. Free, no API key needed.",
   "license": "MIT",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "keywords": [
     "csgo",
