@@ -1,7 +1,7 @@
 # CSGO Inventory to CSV
 
-[![npm](https://img.shields.io/npm/v/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/cs2-inventory-to-csv)
-[![npm](https://img.shields.io/npm/dm/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/cs2-inventory-to-csv)
+[![npm](https://img.shields.io/npm/v/@vict0rcarvalh0/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/@vict0rcarvalh0/cs2-inventory-to-csv)
+[![npm](https://img.shields.io/npm/dm/@vict0rcarvalh0/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/@vict0rcarvalh0/cs2-inventory-to-csv)
 
 Export your CS:GO/CS2 inventory to CSV with live Steam Community Market prices. Free, no API key needed.
 
@@ -15,8 +15,8 @@ Export your CS:GO/CS2 inventory to CSV with live Steam Community Market prices. 
 ### Option 1: From npm (Global Install)
 
 ```bash
-npm install -g csgo-inventory-csv
-csgo-inventory-csv
+npm install -g @vict0rcarvalh0/cs2-inventory-to-csv
+cs2-inventory-to-csv
 ```
 
 ### Option 2: Run Locally (Development)
