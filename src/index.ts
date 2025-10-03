@@ -22,6 +22,9 @@ let ids: string[] = Array();
 let selectedCurrency: string = "USD";
 let steamCurrencyId: number = 1; // Default to USD
 let skinsOnly: boolean = false;
+let priceRangeFilter: boolean = false;
+let minPrice: number = 0;
+let maxPrice: number = Infinity;
 
 // Map common currency codes to Steam currency IDs
 const currencyMap: { [key: string]: number } = {
@@ -64,12 +67,49 @@ await inquirer
       name: "skinsOnly",
       default: false,
     },
+    {
+      type: "confirm",
+      message: "Do you want to filter by a specific price range?",
+      name: "priceRangeFilter",
+      default: false,
+    },
+    {
+      type: "number",
+      message: "Initial price range:",
+      name: "minPrice",
+      default: 0,
+      when: (answers) => answers.priceRangeFilter,
+      validate: (input) => input >= 0 || "Price must be a positive number",
+    },
+    {
+      type: "number",
+      message: "End price range:",
+      name: "maxPrice",
+      default: 100,
+      when: (answers) => answers.priceRangeFilter,
+      validate: (input, answers) => {
+        if (input <= 0) return "Price must be a positive number";
+        if (input <= answers.minPrice) return "End price must be greater than initial price";
+        return true;
+      },
+    },
   ])
   .then((answers) => {
     ids = parseIds(answers.ids);
     selectedCurrency = answers.currency.toUpperCase();
     steamCurrencyId = currencyMap[selectedCurrency] || 1;
     skinsOnly = answers.skinsOnly;
+    priceRangeFilter = answers.priceRangeFilter;
+    
+    if (priceRangeFilter) {
+      minPrice = answers.minPrice || 0;
+      maxPrice = answers.maxPrice || Infinity;
+      log.info(`Price range filter: $${minPrice} - $${maxPrice}`);
+      if (selectedCurrency !== 'USD') {
+        log.warn('Price range filter works best with USD currency!');
+      }
+    }
+    
     log.info(`Using currency: ${selectedCurrency} (Steam ID: ${steamCurrencyId})`);
     log.info(`Skins only mode: ${skinsOnly ? 'enabled' : 'disabled'}`);
   });
@@ -115,6 +155,58 @@ function isWeaponSkin(desc: any): boolean {
   const hasExteriorTag = desc.tags?.some((t: any) => t.category === "Exterior");
   
   return hasWeaponTag || hasExteriorTag;
+}
+
+// Parse price string and extract numeric value
+function parsePriceValue(priceString: string): number | null {
+  if (!priceString) return null;
+  
+  // Remove currency symbols and common formatting
+  // Examples: "$19.50", "19,50€", "R$ 100,00", "¥1,234"
+  const cleaned = priceString.replace(/[^0-9.,]/g, '');
+  
+  // Handle both comma and dot as decimal separator
+  // If both exist, assume the last one is decimal separator
+  let normalized = cleaned;
+  if (cleaned.includes(',') && cleaned.includes('.')) {
+    // e.g., "1,234.56" or "1.234,56"
+    const lastComma = cleaned.lastIndexOf(',');
+    const lastDot = cleaned.lastIndexOf('.');
+    if (lastDot > lastComma) {
+      // "1,234.56" format - remove commas
+      normalized = cleaned.replace(/,/g, '');
+    } else {
+      // "1.234,56" format - remove dots, replace comma with dot
+      normalized = cleaned.replace(/\./g, '').replace(',', '.');
+    }
+  } else if (cleaned.includes(',')) {
+    // Only comma - could be decimal or thousands separator
+    // If only one comma and it's near the end (last 3 chars), treat as decimal
+    const commaPos = cleaned.indexOf(',');
+    if (cleaned.length - commaPos <= 3) {
+      normalized = cleaned.replace(',', '.');
+    } else {
+      normalized = cleaned.replace(/,/g, '');
+    }
+  }
+  
+  const value = parseFloat(normalized);
+  return isNaN(value) ? null : value;
+}
+
+// Check if price is in the target range
+function isInPriceRange(priceString: string, currencyCode: string, min: number, max: number): boolean {
+  const value = parsePriceValue(priceString);
+  if (value === null) return false;
+  
+  // For USD, direct comparison
+  if (currencyCode === 'USD') {
+    return value >= min && value <= max;
+  }
+  
+  // For other currencies, we can't reliably convert without real-time exchange rates
+  // So we'll be permissive and warn the user
+  return true;
 }
 
 // Fetch price from Steam Community Market
@@ -255,6 +347,16 @@ for (const id of ids) {
     } catch (error) {
       log.error(`Error parsing price data. Invalid json response. `);
       log.debug(priceRes);
+    }
+
+    // Apply price range filter if enabled
+    if (priceRangeFilter) {
+      const lowestPrice = priceData?.lowest_price || "";
+      if (!lowestPrice || !isInPriceRange(lowestPrice, selectedCurrency, minPrice, maxPrice)) {
+        log.debug(`Skipping ${desc.market_name} - price ${lowestPrice} outside $${minPrice}-$${maxPrice} range`);
+        continue;
+      }
+      log.debug(`✓ ${desc.market_name} - price ${lowestPrice} is in range`);
     }
 
     parsedItems.push({
