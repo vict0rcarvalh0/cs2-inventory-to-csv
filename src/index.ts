@@ -25,6 +25,7 @@ let skinsOnly: boolean = false;
 let priceRangeFilter: boolean = false;
 let minPrice: number = 0;
 let maxPrice: number = Infinity;
+let exportFormat: string = "csv";
 
 // Map common currency codes to Steam currency IDs
 const currencyMap: { [key: string]: number } = {
@@ -60,6 +61,13 @@ await inquirer
       name: "currency",
       default: "USD",
       choices: Object.keys(currencyMap),
+    },
+    {
+      type: "list",
+      message: "Please select export format: ",
+      name: "exportFormat",
+      default: "csv",
+      choices: ["csv", "json", "all"],
     },
     {
       type: "confirm",
@@ -98,6 +106,7 @@ await inquirer
     ids = parseIds(answers.ids);
     selectedCurrency = answers.currency.toUpperCase();
     steamCurrencyId = currencyMap[selectedCurrency] || 1;
+    exportFormat = answers.exportFormat;
     skinsOnly = answers.skinsOnly;
     priceRangeFilter = answers.priceRangeFilter;
     
@@ -111,6 +120,7 @@ await inquirer
     }
     
     log.info(`Using currency: ${selectedCurrency} (Steam ID: ${steamCurrencyId})`);
+    log.info(`Export format: ${exportFormat}`);
     log.info(`Skins only mode: ${skinsOnly ? 'enabled' : 'disabled'}`);
   });
 
@@ -375,9 +385,22 @@ for (const id of ids) {
       Currency: priceData?.currency || "",
     });
   }
-  let filename = `${id}_${steamId64}_${Math.round(new Date().getTime() / 1000)}.csv`;
-  log.info(`Saving data to ${filename}`);
-  fs.writeFileSync(filename, stringify(parsedItems, { header: true }));
+  
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const baseFilename = `${id}_${steamId64}_${timestamp}`;
+  
+  // Export based on selected format
+  if (exportFormat === "csv" || exportFormat === "all") {
+    const csvFilename = `${baseFilename}.csv`;
+    log.info(`Saving CSV data to ${csvFilename}`);
+    fs.writeFileSync(csvFilename, stringify(parsedItems, { header: true }));
+  }
+  
+  if (exportFormat === "json" || exportFormat === "all") {
+    const jsonFilename = `${baseFilename}.json`;
+    log.info(`Saving JSON data to ${jsonFilename}`);
+    fs.writeFileSync(jsonFilename, JSON.stringify(parsedItems, null, 2));
+  }
 }
 
 function parseIds(idstr: string) {

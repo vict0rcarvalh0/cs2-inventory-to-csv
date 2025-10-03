@@ -1,0 +1,32 @@
+[
+  {
+    "Type": "Consumer Grade Shotgun",
+    "MarketName": "XM1014 | Blue Spruce (Field-Tested)",
+    "MarketHashName": "XM1014 | Blue Spruce (Field-Tested)",
+    "Marketable": "Yes",
+    "Exterior": "Field-Tested",
+    "ItemSet": "The Lake Collection",
+    "Quality": "Normal",
+    "Rarity": "Consumer Grade",
+    "Weapon": "XM1014",
+    "LowestPrice": "$0.04",
+    "MedianPrice": "$0.02",
+    "Volume": "629",
+    "Currency": "USD"
+  },
+  {
+    "Type": "Consumer Grade Shotgun",
+    "MarketName": "Nova | Polar Mesh (Field-Tested)",
+    "MarketHashName": "Nova | Polar Mesh (Field-Tested)",
+    "Marketable": "Yes",
+    "Exterior": "Field-Tested",
+    "ItemSet": "The Train Collection",
+    "Quality": "Normal",
+    "Rarity": "Consumer Grade",
+    "Weapon": "Nova",
+    "LowestPrice": "$0.07",
+    "MedianPrice": "$0.05",
+    "Volume": "454",
+    "Currency": "USD"
+  }
+]

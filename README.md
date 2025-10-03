@@ -1,9 +1,9 @@
-# CSGO Inventory to CSV
+# CSGO Inventory Exporter
 
 [![npm](https://img.shields.io/npm/v/@vict0rcarvalh0/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/@vict0rcarvalh0/cs2-inventory-to-csv)
 [![npm](https://img.shields.io/npm/dm/@vict0rcarvalh0/cs2-inventory-to-csv?style=plastic)](https://www.npmjs.com/package/@vict0rcarvalh0/cs2-inventory-to-csv)
 
-Export your CS:GO/CS2 inventory to CSV with live Steam Community Market prices. Free, no API key needed.
+Export your CS:GO/CS2 inventory to CSV or JSON with live Steam Community Market prices. Free, no API key needed.
 
 ## Prerequisites
 
@@ -38,14 +38,19 @@ node build/index.js --verbose
 The interactive prompts will guide you through:
 1. Enter Steam user IDs (comma-separated)
 2. Select currency from the list (USD, EUR, GBP, RUB, BRL, CAD, AUD, CNY, INR, JPY, KRW, TRY, UAH, MXN, ARS, CLP)
+3. Select export format (CSV, JSON, or ALL)
+4. Optional: Filter weapon skins only
+5. Optional: Filter by custom price range
 
-Output CSV files will be saved in the current directory with format: `{userId}_{steamId64}_{timestamp}.csv`
+Output files will be saved in the current directory with format: `{userId}_{steamId64}_{timestamp}.{csv|json}`
 
-### CSV Output Fields
+### Output Fields
 - Type, MarketName, MarketHashName, Marketable
 - Exterior, ItemSet, Quality, Rarity, Weapon
 - **LowestPrice**, **MedianPrice**, **Volume** (from Steam Market)
 - Currency
+
+Both CSV and JSON formats include the same fields. JSON provides a structured format ideal for programmatic access.
 
 **Note:** Fetching prices takes ~3 seconds per item (Steam rate limit). Large inventories will take time.
 
