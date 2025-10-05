@@ -26,6 +26,7 @@ let priceRangeFilter: boolean = false;
 let minPrice: number = 0;
 let maxPrice: number = Infinity;
 let exportFormat: string = "csv";
+let inputMode: "auto" | "steamid64" | "vanity" = "auto";
 
 // Map common currency codes to Steam currency IDs
 const currencyMap: { [key: string]: number } = {
@@ -51,9 +52,20 @@ await inquirer
   .prompt([
     {
       type: "input",
-      message: "Please enter steam user ids separated by comma: ",
+      message: "Please enter Steam IDs or vanity names separated by comma: ",
       name: "ids",
       validate: (input) => parseIds(input).length > 0 || "Please a valid value. ",
+    },
+    {
+      type: "list",
+      message: "Input type: ",
+      name: "inputMode",
+      default: "auto",
+      choices: [
+        { name: "Auto-detect (recommended)", value: "auto" },
+        { name: "SteamID64 (17-digit)", value: "steamid64" },
+        { name: "Vanity name (profile name)", value: "vanity" },
+      ],
     },
     {
       type: "list",
@@ -104,6 +116,7 @@ await inquirer
   ])
   .then((answers) => {
     ids = parseIds(answers.ids);
+    inputMode = answers.inputMode;
     selectedCurrency = answers.currency.toUpperCase();
     steamCurrencyId = currencyMap[selectedCurrency] || 1;
     exportFormat = answers.exportFormat;
@@ -122,6 +135,7 @@ await inquirer
     log.info(`Using currency: ${selectedCurrency} (Steam ID: ${steamCurrencyId})`);
     log.info(`Export format: ${exportFormat}`);
     log.info(`Skins only mode: ${skinsOnly ? 'enabled' : 'disabled'}`);
+    log.info(`Input mode: ${inputMode}`);
   });
 
 log.debug(`Input ids are ${JSON.stringify(ids)}`);
@@ -219,6 +233,32 @@ function isInPriceRange(priceString: string, currencyCode: string, min: number, 
   return true;
 }
 
+// Resolve vanity name or SteamID64 to SteamID64
+async function resolveToSteamId64(idOrVanity: string): Promise<string | null> {
+  const trimmed = idOrVanity.trim();
+
+  // If mode is SteamID64, trust as-is
+  if (inputMode === 'steamid64') {
+    return /^[0-9]{16,20}$/.test(trimmed) ? trimmed : null;
+  }
+
+  // If numeric and auto mode, treat as SteamID64
+  if (inputMode === 'auto' && /^[0-9]{16,20}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Otherwise resolve vanity via XML profile
+  try {
+    const url = `https://steamcommunity.com/id/${encodeURIComponent(trimmed)}?xml=1`;
+    const res = await axios.get(url);
+    const steamId64 = new XMLParser().parse(res.data)?.profile?.steamID64;
+    if (!steamId64) return null;
+    return steamId64;
+  } catch {
+    return null;
+  }
+}
+
 // Fetch price from Steam Community Market
 async function getSteamMarketPrice(marketHashName: string, currencyId: number): Promise<any> {
   try {
@@ -256,22 +296,16 @@ async function getSteamMarketPrice(marketHashName: string, currencyId: number): 
 }
 
 for (const id of ids) {
-  log.info(`Getting SteamId64 for ${id}. `);
+  log.info(`Resolving identifier: ${id}`);
 
-  let url = `https://steamcommunity.com/id/${id}?xml=1`;
+  let steamId64 = await resolveToSteamId64(id);
 
-  let steamId64 = "";
-
-  try {
-    let res = await axios.get(url);
-    steamId64 = new XMLParser().parse(res.data).profile.steamID64;
-    if (steamId64 == undefined) throw new Error("Could not parse SteamID64");
-  } catch (error) {
-    console.error("Error getting SteamId64. ", error);
+  if (!steamId64) {
+    console.error("Error resolving SteamID64 for:", id);
     continue;
   }
 
-  let inventoryUrl = `https://steamcommunity.com/inventory/${steamId64}/730/2?l=english&count=200`;
+  const inventoryUrl = `https://steamcommunity.com/inventory/${steamId64}/730/2?l=english&count=200`;
 
   log.info(`Getting csgo inventory for ${steamId64}`);
 
